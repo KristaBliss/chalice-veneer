@@ -24,7 +24,7 @@ class Service:
         self.cors = cors
         for route in self.routes:
             self._prepare_route(route)
-        self.blueprints = []
+        self.blueprints: List[ServiceBlueprint] = []
 
     def register_service_blueprint(
         self,
