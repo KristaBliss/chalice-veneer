@@ -1,10 +1,18 @@
-from chalice import Chalice, Blueprint, Response, IAMAuthorizer, CognitoUserPoolAuthorizer, CORSConfig
-from chalice.app import MultiDict
-from gzip import compress
-from typing import Union, Iterable, Optional, List, Dict
-from types import GenericAlias
-from pydantic import BaseModel
 from abc import ABC, abstractmethod
+from gzip import compress
+from types import GenericAlias
+from typing import Dict, Iterable, List, Optional, Union
+
+from chalice import (
+    Blueprint,
+    Chalice,
+    CognitoUserPoolAuthorizer,
+    CORSConfig,
+    IAMAuthorizer,
+    Response,
+)
+from chalice.app import MultiDict
+from pydantic import BaseModel
 
 
 class Route(ABC):
@@ -30,7 +38,9 @@ class Route(ABC):
             def _iterable_compatible(annotation) -> bool:
                 """Checks if a given type annotation is compatible as an iterable"""
                 if hasattr(annotation, "__origin__"):
-                    if type(annotation) == GenericAlias and issubclass(annotation.__origin__, Iterable):
+                    if type(annotation) == GenericAlias and issubclass(
+                        annotation.__origin__, Iterable
+                    ):
                         return True
                     if annotation.__origin__ is Union:
                         for item in annotation.__args__:
@@ -38,7 +48,7 @@ class Route(ABC):
                                 return True
                 return False
 
-            def _single_value_compatible( annotation) -> bool:
+            def _single_value_compatible(annotation) -> bool:
                 """Checks if a given type annotation is compatible as a single value"""
                 if hasattr(annotation, "__origin__"):
                     if annotation.__origin__ is Union:
@@ -59,7 +69,10 @@ class Route(ABC):
                         value = values.getlist(k)
                         value_len = len(value)
                         if _iterable_compatible(value_type_def):
-                            if _single_value_compatible(value_type_def) and value_len == 1:
+                            if (
+                                _single_value_compatible(value_type_def)
+                                and value_len == 1
+                            ):
                                 result[k] = value[0]
                             else:
                                 result[k] = value
@@ -75,7 +88,7 @@ class Route(ABC):
             return Response(
                 body=compress(self.json().encode()) if gzip else self.json(),
                 headers=headers,
-                status_code=status_code
+                status_code=status_code,
             )
 
     class ApiError(Exception):
@@ -94,16 +107,18 @@ class Route(ABC):
 
         def to_response(self, headers: dict, gzip: bool) -> Response:
             return Response(
-                body=compress(self.to_model().json().encode()) if gzip else self.to_model().json(),
+                body=compress(self.to_model().json().encode())
+                if gzip
+                else self.to_model().json(),
                 headers=headers,
-                status_code=self.status_code
+                status_code=self.status_code,
             )
 
     def __init__(self, app: Union[Chalice, Blueprint]):
         self.app = app
         chalice_kwargs = {
             "path": self.Config.path,
-            "methods": [x.upper() for x in self.Config.methods]
+            "methods": [x.upper() for x in self.Config.methods],
         }
         if self.Config.authorizer:
             chalice_kwargs["authorizer"] = self.Config.authorizer
@@ -118,9 +133,13 @@ class Route(ABC):
     @property
     def query_params(self) -> "Route.QueryModel":
         if self.Config.allow_multidict_query_params:
-            return self.QueryModel.parse_multidict(self.app.current_request.query_params or MultiDict(mapping={}))
+            return self.QueryModel.parse_multidict(
+                self.app.current_request.query_params or MultiDict(mapping={})
+            )
         else:
-            return self.QueryModel.parse_obj(self.app.current_request.query_params or {})
+            return self.QueryModel.parse_obj(
+                self.app.current_request.query_params or {}
+            )
 
     @property
     def body(self) -> "Route.BodyModel":
@@ -128,7 +147,11 @@ class Route(ABC):
 
     @property
     def cognito_userid(self) -> Optional[str]:
-        return self.app.current_request.context.get("authorizer", {}).get("claims", {}).get("sub")
+        return (
+            self.app.current_request.context.get("authorizer", {})
+            .get("claims", {})
+            .get("sub")
+        )
 
     @property
     def iam_user_arn(self) -> Optional[str]:
@@ -146,7 +169,9 @@ class Route(ABC):
             response = self.request()
             if isinstance(response, self.ResponseModel):
                 headers["Content-Type"] = "application/json"
-                return response.to_response(headers, self.Config.default_status_code, self.Config.gzip)
+                return response.to_response(
+                    headers, self.Config.default_status_code, self.Config.gzip
+                )
             elif isinstance(response, Response):
                 if not response.status_code:
                     response.status_code = self.Config.default_status_code
@@ -168,7 +193,9 @@ class Route(ABC):
             print(e)
             if self.Config.catch_all_as_api_error:
                 return self.ApiError(e, 500).to_response(headers, self.Config.gzip)
-            return self.ApiError("An internal server error occurred.", 500).to_response(headers, self.Config.gzip)
+            return self.ApiError("An internal server error occurred.", 500).to_response(
+                headers, self.Config.gzip
+            )
 
     @abstractmethod
     def request(self) -> Union["Route.ResponseModel", Response]:

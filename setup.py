@@ -28,6 +28,6 @@ setup(
     py_modules=["chalice_veneer"],
     include_package_data=True,
     install_requires=["chalice", "pydantic"],
-    python_requires='>=3.7',
+    python_requires=">=3.7",
     zip_safe=False,  # https://mypy.readthedocs.io/en/latest/installed_packages.html
 )

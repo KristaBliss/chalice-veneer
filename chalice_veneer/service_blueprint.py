@@ -1,18 +1,23 @@
-from chalice import Blueprint, IAMAuthorizer, CognitoUserPoolAuthorizer, CORSConfig
-from typing import Union, Optional, Type, List
+from typing import List, Optional, Type, Union
+
+from chalice import Blueprint, CognitoUserPoolAuthorizer, CORSConfig, IAMAuthorizer
+
 from route import Route
 
 
 class ServiceBlueprint:
-    def __init__(self, routes: Optional[List[Type[Route]]] = None,
-                 sub_blueprints: Optional[List["ServiceBlueprint"]] = None,
-                 url_prefix: Optional[str] = "/",
-                 import_name: Optional[str] = None,
-                 extend_parent_prefix: Optional[bool] = True,
-                 authorizer: Optional[Union[CognitoUserPoolAuthorizer, IAMAuthorizer]] = None,
-                 inherit_authorizer: Optional[bool] = True,
-                 cors: Optional[CORSConfig] = None,
-                 inherit_cors: Optional[bool] = True):
+    def __init__(
+        self,
+        routes: Optional[List[Type[Route]]] = None,
+        sub_blueprints: Optional[List["ServiceBlueprint"]] = None,
+        url_prefix: Optional[str] = "/",
+        import_name: Optional[str] = None,
+        extend_parent_prefix: Optional[bool] = True,
+        authorizer: Optional[Union[CognitoUserPoolAuthorizer, IAMAuthorizer]] = None,
+        inherit_authorizer: Optional[bool] = True,
+        cors: Optional[CORSConfig] = None,
+        inherit_cors: Optional[bool] = True,
+    ):
         self.blueprint = Blueprint(import_name or __name__)
         self.routes = routes or []
         self._instantiated_routes = []
@@ -31,8 +36,11 @@ class ServiceBlueprint:
             route.Config.cors = self.cors
         self._instantiated_routes.append(route(self.blueprint))
 
-    def propagate(self, authorizer: Optional[Union[CognitoUserPoolAuthorizer, IAMAuthorizer]] = None,
-                  cors: Optional[CORSConfig] = None):
+    def propagate(
+        self,
+        authorizer: Optional[Union[CognitoUserPoolAuthorizer, IAMAuthorizer]] = None,
+        cors: Optional[CORSConfig] = None,
+    ):
         if self.inherit_authorizer:
             self.authorizer = authorizer
         if self.inherit_cors:
