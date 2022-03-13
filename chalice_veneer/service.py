@@ -24,6 +24,7 @@ class Service:
         self.cors = cors
         for route in self.routes:
             self._prepare_route(route)
+        self.blueprints = []
 
     def register_service_blueprint(
         self,
@@ -31,6 +32,8 @@ class Service:
         parent_prefix: Optional[str] = None,
         parent_service_blueprint: Optional["ServiceBlueprint"] = None,
     ):
+        if not parent_service_blueprint:
+            self.blueprints.append(service_blueprint)
         service_blueprint.propagate(
             parent_service_blueprint.authorizer
             if parent_service_blueprint
