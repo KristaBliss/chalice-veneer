@@ -2,8 +2,8 @@ from typing import List, Optional, Type, Union
 
 from chalice import Chalice, CognitoUserPoolAuthorizer, CORSConfig, IAMAuthorizer
 
-from route import Route
-from service_blueprint import ServiceBlueprint
+from .route import Route
+from .service_blueprint import ServiceBlueprint
 
 
 class Service:
