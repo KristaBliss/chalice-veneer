@@ -7,7 +7,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="chalice-veneer",
-    version="0.0.15",
+    version="0.0.20",
     description="Class based routing for Chalice with built in validation through Pydantic",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -28,7 +28,7 @@ setup(
     py_modules=["chalice_veneer"],
     packages=["chalice_veneer"],
     include_package_data=True,
-    install_requires=["chalice", "pydantic"],
+    install_requires=["pydantic"],
     python_requires=">=3.7",
     zip_safe=False,  # https://mypy.readthedocs.io/en/latest/installed_packages.html
 )
