@@ -50,11 +50,7 @@ class Service:
             self.register_service_blueprint(blueprint, prefix, service_blueprint)
 
     def _prepare_route(self, route: Type[Route]):
-        if route.Config.inherit_authorizer and self.authorizer:
-            route.Config.authorizer = self.authorizer
-        if route.Config.inherit_cors and self.cors:
-            route.Config.cors = self.cors
-        self._instantiated_routes.append(route(self.app))
+        self._instantiated_routes.append(route(self.app, self.authorizer, self.cors))
 
     def register_routes(self, routes: Union[Type[Route], List[Type[Route]]]):
         if type(routes) == Route:

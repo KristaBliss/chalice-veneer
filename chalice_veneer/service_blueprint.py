@@ -29,13 +29,6 @@ class ServiceBlueprint:
         self.cors = cors
         self.inherit_cors = inherit_cors
 
-    def _prepare_route(self, route: Type[Route]):
-        if route.Config.inherit_authorizer and self.authorizer:
-            route.Config.authorizer = self.authorizer
-        if route.Config.inherit_cors and self.cors:
-            route.Config.cors = self.cors
-        self._instantiated_routes.append(route(self.blueprint))
-
     def propagate(
         self,
         authorizer: Optional[Union[CognitoUserPoolAuthorizer, IAMAuthorizer]] = None,
@@ -46,8 +39,4 @@ class ServiceBlueprint:
         if self.inherit_cors:
             self.cors = cors
         for route in self.routes:
-            if route.Config.inherit_authorizer:
-                route.Config.authorizer = self.authorizer
-            if route.Config.inherit_cors:
-                route.Config.cors = self.cors
-            self._prepare_route(route)
+            self._instantiated_routes.append(route(self.blueprint, self.authorizer, self.cors))

@@ -114,16 +114,32 @@ class Route(ABC):
                 status_code=self.status_code,
             )
 
-    def __init__(self, app: Union[Chalice, Blueprint]):
+    def __init__(
+            self,
+            app: Union[Chalice, Blueprint],
+            authorizer: Optional[Union[IAMAuthorizer, CognitoUserPoolAuthorizer]] = None,
+            cors: Optional[CORSConfig] = None,
+    ):
         self.app = app
         chalice_kwargs = {
             "path": self.Config.path,
             "methods": [x.upper() for x in self.Config.methods],
         }
-        if self.Config.authorizer:
-            chalice_kwargs["authorizer"] = self.Config.authorizer
-        if self.Config.cors:
-            chalice_kwargs["cors"] = self.Config.cors
+
+        if self.Config.inherit_authorizer:
+            self.authorizer = authorizer
+        else:
+            self.authorizer = self.Config.authorizer
+        if self.authorizer:
+            chalice_kwargs["authorizer"] = self.authorizer
+
+        if self.Config.inherit_cors:
+            self.cors = cors
+        else:
+            self.cors = self.Config.cors
+        if self.cors:
+            chalice_kwargs["cors"] = self.cors
+
         self.app.route(**chalice_kwargs)(self._request_wrapper)
 
     @property
