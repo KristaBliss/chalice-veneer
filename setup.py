@@ -7,7 +7,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="chalice-veneer",
-    version="0.0.21",
+    version="0.0.23",
     description="Class based routing for Chalice with built in validation through Pydantic",
     long_description=README,
     long_description_content_type="text/markdown",
