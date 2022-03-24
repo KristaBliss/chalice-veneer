@@ -41,7 +41,11 @@ class Service:
             parent_service_blueprint.cors if parent_service_blueprint else self.cors,
         )
         if service_blueprint.extend_parent_prefix and parent_prefix:
-            prefix = f"{parent_prefix.removesuffix('/')}{service_blueprint.url_prefix}"
+            if parent_prefix.endswith("/"):
+                prefix = parent_prefix[:-1]
+            else:
+                prefix = parent_prefix
+            prefix = f"{prefix}{service_blueprint.url_prefix}"
         else:
             prefix = service_blueprint.url_prefix
 
