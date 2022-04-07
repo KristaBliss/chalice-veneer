@@ -204,7 +204,9 @@ class Route(ABC):
                     "Return value from request must either be a Route.ResponseModel or chalice Response"
                 )
         except self.ApiError as e:
-            return e.to_response(headers, self.Config.gzip)
+            if headers.get("Content-Encoding") == "gzip":
+                del headers["Content-Encoding"]
+            return e.to_response(headers, gzip=False)
         except Exception as e:
             print(e)
             if self.Config.catch_all_as_api_error:
